@@ -1,0 +1,192 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 240 10% 3.9%;
+  --muted: 60 4.8% 95.9%;
+  --muted-foreground: 25 5.3% 44.7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 240 10% 3.9%;
+  --card: 0 0% 100%;
+  --card-foreground: 240 10% 3.9%;
+  --border: 20 5.9% 90%;
+  --input: 20 5.9% 90%;
+  --primary: 246 80% 60%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 39 100% 50%;
+  --secondary-foreground: 0 0% 100%;
+  --accent: 160 84% 39%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  --ring: 246 80% 60%;
+  --radius: 0.75rem;
+
+  /* Chart colors */
+  --chart-1: 246 80% 60%;
+  --chart-2: 39 100% 50%;
+  --chart-3: 160 84% 39%;
+  --chart-4: 346 77% 49%;
+  --chart-5: 215 100% 50%;
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --primary: 246 80% 60%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 39 100% 50%;
+  --secondary-foreground: 0 0% 100%;
+  --accent: 160 84% 39%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 240 4.9% 83.9%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-neutral-50 text-foreground font-sans min-h-screen;
+  }
+}
+
+@layer components {
+  .app-container {
+    max-width: 500px;
+    min-height: 100vh;
+    margin: 0 auto;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .screen {
+    display: block;
+    height: calc(100% - 4rem); /* Account for bottom nav */
+    overflow-y: auto;
+    animation: fadeIn 0.3s ease-in-out;
+    padding-bottom: 5rem; /* Extra padding for bottom nav */
+  }
+  
+  .tab-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    z-index: 10;
+  }
+  
+  .tab-container {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+  
+  /* Animation classes */
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+  }
+  
+  @keyframes slideUp {
+    0% { transform: translateY(10px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+  }
+  
+  /* QR Scanner Styles */
+  .qr-viewfinder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 250px;
+    height: 250px;
+    border: 2px solid white;
+    border-radius: 12px;
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.5);
+    z-index: 5;
+  }
+  
+  .qr-viewfinder::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    border-top: 4px solid hsl(var(--primary));
+    border-left: 4px solid hsl(var(--primary));
+    border-top-left-radius: 8px;
+  }
+  
+  .qr-viewfinder::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    border-top: 4px solid hsl(var(--primary));
+    border-right: 4px solid hsl(var(--primary));
+    border-top-right-radius: 8px;
+  }
+  
+  .qr-corner-bl {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 40px;
+    border-bottom: 4px solid hsl(var(--primary));
+    border-left: 4px solid hsl(var(--primary));
+    border-bottom-left-radius: 8px;
+  }
+  
+  .qr-corner-br {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 40px;
+    height: 40px;
+    border-bottom: 4px solid hsl(var(--primary));
+    border-right: 4px solid hsl(var(--primary));
+    border-bottom-right-radius: 8px;
+  }
+  
+  .qr-scanner-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: hsl(var(--primary));
+    animation: scanLine 2s linear infinite;
+  }
+  
+  @keyframes scanLine {
+    0% { top: 0; }
+    50% { top: 100%; }
+    100% { top: 0; }
+  }
+}
