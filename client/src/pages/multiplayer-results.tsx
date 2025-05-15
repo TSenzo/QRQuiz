@@ -3,13 +3,16 @@ import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MultiplayerService, wsConnection } from "@/lib/multiplayer-service";
 import { useToast } from "@/hooks/use-toast";
 import { GameSession, Quiz } from "@shared/schema";
-import { Loader2, Trophy, Medal, ChevronUp, Home } from "lucide-react";
+import { Trophy, Home, Users, RefreshCw, Star, Zap, Award, PartyPopper, Crown } from "lucide-react";
+import ResultsPodium from "@/components/results-podium";
+import PlayerAvatar from "@/components/player-avatar";
+import PlayerList from "@/components/player-list";
+import confetti from "canvas-confetti";
 
 // Animation pour les entrées du classement
 const staggerItems = {
@@ -64,12 +67,62 @@ export default function MultiplayerResults() {
     };
   }, []);
   
+  // Effet pour lancer des confettis si le joueur est le gagnant
+  useEffect(() => {
+    if (session && playerId) {
+      // Trouver le joueur actuel et sa position
+      const sortedPlayers = [...session.players].sort((a, b) => b.currentScore - a.currentScore);
+      const playerPosition = sortedPlayers.findIndex(p => p.id === playerId) + 1;
+      
+      // Lancer des confettis pour le gagnant
+      if (playerPosition === 1) {
+        const duration = 3000;
+        const end = Date.now() + duration;
+        
+        const shootConfetti = () => {
+          confetti({
+            particleCount: 5,
+            angle: 60,
+            spread: 55,
+            origin: { x: 0.1, y: 0.5 },
+            colors: ['#ffd700', '#ffb900', '#ffffff']
+          });
+          
+          confetti({
+            particleCount: 5,
+            angle: 120,
+            spread: 55,
+            origin: { x: 0.9, y: 0.5 },
+            colors: ['#ffd700', '#ffb900', '#ffffff']
+          });
+          
+          if (Date.now() < end) {
+            requestAnimationFrame(shootConfetti);
+          }
+        };
+        
+        // Retarder le lancement pour s'assurer que le composant est monté
+        setTimeout(() => {
+          shootConfetti();
+        }, 500);
+      }
+    }
+  }, [session, playerId]);
+
   // Si la page est en cours de chargement
   if (isLoadingSession || isLoadingQuiz) {
     return (
-      <div className="container mx-auto p-4 flex flex-col items-center justify-center min-h-[60vh]">
-        <Loader2 className="h-8 w-8 animate-spin mb-4" />
-        <p>Chargement des résultats...</p>
+      <div className="animated-gradient min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="mx-auto mb-4"
+          >
+            <Trophy className="h-16 w-16 text-yellow-400" />
+          </motion.div>
+          <p className="text-xl text-white">Chargement des résultats...</p>
+        </div>
       </div>
     );
   }
@@ -77,16 +130,19 @@ export default function MultiplayerResults() {
   // Si une erreur s'est produite
   if (isErrorSession) {
     return (
-      <div className="container mx-auto p-4">
-        <Card className="max-w-2xl mx-auto">
+      <div className="animated-gradient min-h-screen p-8">
+        <Card className="max-w-2xl mx-auto glass-card border-red-400/20">
           <CardHeader>
-            <CardTitle className="text-destructive">Erreur</CardTitle>
+            <CardTitle className="text-red-400">Erreur</CardTitle>
           </CardHeader>
           <CardContent>
-            <p>Impossible de charger les résultats : {(errorSession as Error).message}</p>
+            <p className="text-white/80">Impossible de charger les résultats : {(errorSession as Error).message}</p>
           </CardContent>
           <CardFooter>
-            <Button onClick={() => navigate("/multiplayer")}>
+            <Button 
+              onClick={() => navigate("/multiplayer")}
+              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 border-0"
+            >
               Retour
             </Button>
           </CardFooter>
@@ -98,16 +154,25 @@ export default function MultiplayerResults() {
   // Si le quiz n'est pas terminé
   if (session?.status !== "finished") {
     return (
-      <div className="container mx-auto p-4">
-        <Card className="max-w-2xl mx-auto">
+      <div className="animated-gradient min-h-screen p-8">
+        <Card className="max-w-2xl mx-auto glass-card border-orange-400/20">
           <CardHeader>
-            <CardTitle>Quiz en cours</CardTitle>
+            <CardTitle className="text-white flex items-center">
+              <RefreshCw className="h-5 w-5 mr-2 text-orange-400" />
+              Quiz en cours
+            </CardTitle>
+            <CardDescription className="text-white/70">
+              Le quiz n'est pas encore terminé
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            <p>Le quiz n'est pas encore terminé.</p>
+            <p className="text-white/80">Vous devez terminer le quiz avant de voir les résultats.</p>
           </CardContent>
           <CardFooter>
-            <Button onClick={() => navigate(`/multiplayer-game/${sessionId}`)}>
+            <Button 
+              onClick={() => navigate(`/multiplayer-game/${sessionId}`)}
+              className="bg-gradient-to-r from-orange-600 to-amber-600 hover:opacity-90 border-0"
+            >
               Retourner au quiz
             </Button>
           </CardFooter>
@@ -125,107 +190,182 @@ export default function MultiplayerResults() {
     ? sortedPlayers.findIndex(p => p.id === playerId) + 1
     : -1;
   
+  // Message de félicitations basé sur la position
+  const getPositionMessage = (position: number, totalPlayers: number) => {
+    if (position === 1) return "Félicitations ! Vous êtes le grand gagnant !";
+    if (position === 2) return "Excellent travail ! Vous êtes sur le podium !";
+    if (position === 3 && totalPlayers > 3) return "Bravo ! Vous êtes sur le podium !";
+    if (position <= totalPlayers / 2) return "Bien joué ! Vous êtes dans la première moitié du classement !";
+    if (position === totalPlayers) return "Ne vous découragez pas, continuez à apprendre !";
+    return "Continuez vos efforts, vous pouvez vous améliorer !";
+  };
+
   return (
-    <div className="container mx-auto p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-3xl font-bold mb-2">Résultats du Quiz</h1>
-          {quiz && (
-            <div className="mb-4">
-              <p className="text-xl font-medium">{quiz.title}</p>
-              <p className="text-sm text-muted-foreground">
-                {quiz.questions.length} questions
-              </p>
-            </div>
-          )}
+    <div className="animated-gradient min-h-screen pb-16">
+      <div className="container mx-auto px-4 py-8">
+        <motion.div
+          initial={{ y: -30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-10"
+        >
+          <h1 className="text-4xl font-bold text-white mb-2 flex items-center justify-center">
+            <PartyPopper className="h-8 w-8 mr-3 text-yellow-400" />
+            Résultats du Quiz
+            <PartyPopper className="h-8 w-8 ml-3 text-yellow-400" />
+          </h1>
+          <p className="text-xl text-white/80">{quiz?.title}</p>
           
+          {/* Message personnalisé en fonction de la position */}
           {currentPlayer && (
-            <div className="mt-6">
-              <p className="text-xl">
-                Votre Score: <span className="font-bold">{currentPlayer.currentScore} points</span>
-              </p>
-              <p>
-                Votre rang: <span className="font-bold">{currentPlayerRank}</span> sur {sortedPlayers.length}
-              </p>
-            </div>
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="mt-4"
+            >
+              <Badge className="text-base px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600">
+                {getPositionMessage(currentPlayerRank, sortedPlayers.length)}
+              </Badge>
+            </motion.div>
           )}
+        </motion.div>
+        
+        {/* Podium principal */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="mb-12"
+        >
+          <ResultsPodium players={sortedPlayers} />
+        </motion.div>
+        
+        {/* Cartes des résultats et classement */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          {/* Carte des statistiques personnelles */}
+          <motion.div
+            initial={{ x: -30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.4, duration: 0.6 }}
+          >
+            <Card className="glass-card border-purple-400/20 overflow-hidden h-full">
+              <CardHeader className="border-b border-white/10">
+                <CardTitle className="text-xl text-white flex items-center">
+                  <Star className="h-5 w-5 mr-2 text-yellow-400" />
+                  Votre résultat
+                </CardTitle>
+                <CardDescription className="text-white/70">
+                  Vos statistiques personnelles
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent className="pt-6">
+                {currentPlayer ? (
+                  <>
+                    <div className="flex items-center justify-center mb-6">
+                      <PlayerAvatar 
+                        name={currentPlayer.name}
+                        isHost={currentPlayer.isHost}
+                        size="lg"
+                        position={currentPlayerRank}
+                        showScore
+                        score={currentPlayer.currentScore}
+                      />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-6 mt-6">
+                      <div className="bg-white/5 p-4 rounded-lg text-center">
+                        <p className="text-white/70 text-sm mb-1">Votre score</p>
+                        <p className="text-3xl font-bold text-white flex items-center justify-center">
+                          <Zap className="h-5 w-5 mr-2 text-yellow-400" />
+                          {currentPlayer.currentScore}
+                          <span className="text-lg ml-1 text-white/70">pts</span>
+                        </p>
+                      </div>
+                      
+                      <div className="bg-white/5 p-4 rounded-lg text-center">
+                        <p className="text-white/70 text-sm mb-1">Position</p>
+                        <p className="text-3xl font-bold text-white flex items-center justify-center">
+                          <Award className="h-5 w-5 mr-2 text-yellow-400" />
+                          {currentPlayerRank}
+                          <span className="text-lg ml-1 text-white/70">/{sortedPlayers.length}</span>
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-center text-white/70 py-8">
+                    Vous n'êtes plus dans cette session
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+          
+          {/* Carte du classement complet */}
+          <motion.div
+            initial={{ x: 30, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.6 }}
+          >
+            <Card className="glass-card border-blue-400/20 overflow-hidden h-full">
+              <CardHeader className="border-b border-white/10">
+                <CardTitle className="text-xl text-white flex items-center">
+                  <Trophy className="h-5 w-5 mr-2 text-amber-400" />
+                  Classement complet
+                </CardTitle>
+                <CardDescription className="text-white/70">
+                  Tous les participants classés
+                </CardDescription>
+              </CardHeader>
+              
+              <CardContent className="pt-6">
+                <PlayerList 
+                  players={sortedPlayers}
+                  showScore={true}
+                  showStatus={false}
+                />
+              </CardContent>
+            </Card>
+          </motion.div>
         </div>
         
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Trophy className="h-6 w-6 text-yellow-500" />
-              Classement Final
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <motion.ul 
-              className="space-y-4"
-              variants={staggerItems}
-              initial="hidden"
-              animate="show"
-            >
-              {sortedPlayers.map((player, index) => (
-                <motion.li 
-                  key={player.id}
-                  variants={listItem}
-                  className={`p-4 border rounded-lg flex items-center ${
-                    player.id === playerId ? "bg-primary/10 border-primary" : ""
-                  }`}
-                >
-                  <div className="flex-shrink-0 w-10 text-center">
-                    {index === 0 ? (
-                      <Trophy className="h-6 w-6 mx-auto text-yellow-500" />
-                    ) : index === 1 ? (
-                      <Medal className="h-6 w-6 mx-auto text-gray-400" />
-                    ) : index === 2 ? (
-                      <Medal className="h-6 w-6 mx-auto text-amber-700" />
-                    ) : (
-                      <span className="text-lg font-bold">{index + 1}</span>
-                    )}
-                  </div>
-                  
-                  <div className="ml-4 flex-grow">
-                    <div className="font-medium">
-                      {player.name}
-                      {player.id === playerId && (
-                        <Badge variant="outline" className="ml-2">Vous</Badge>
-                      )}
-                      {player.isHost && (
-                        <Badge variant="secondary" className="ml-2">Hôte</Badge>
-                      )}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {(player.answers?.length || 0)} réponses
-                    </div>
-                  </div>
-                  
-                  <div className="flex-shrink-0 text-right">
-                    <div className="text-xl font-bold">{player.currentScore}</div>
-                    <div className="text-sm text-muted-foreground">points</div>
-                  </div>
-                </motion.li>
-              ))}
-            </motion.ul>
-          </CardContent>
-          <CardFooter className="flex flex-col sm:flex-row gap-4 justify-center">
+        {/* Boutons d'action */}
+        <motion.div
+          initial={{ y: 30, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.7, duration: 0.6 }}
+          className="max-w-2xl mx-auto mt-12 flex flex-col md:flex-row gap-4 justify-center"
+        >
+          <Button 
+            onClick={() => navigate("/")} 
+            variant="outline" 
+            className="flex gap-2 w-full md:w-auto bg-white/10 text-white hover:bg-white/20 border-white/20"
+          >
+            <Home className="h-4 w-4" />
+            <span>Accueil</span>
+          </Button>
+          
+          <Button 
+            onClick={() => navigate("/multiplayer")} 
+            variant="outline" 
+            className="flex gap-2 w-full md:w-auto bg-white/10 text-white hover:bg-white/20 border-white/20"
+          >
+            <Users className="h-4 w-4" />
+            <span>Autre partie</span>
+          </Button>
+          
+          {currentPlayer?.isHost && (
             <Button 
-              variant="outline" 
-              onClick={() => navigate("/multiplayer")}
-              className="w-full sm:w-auto"
+              onClick={() => navigate(`/multiplayer-lobby/${sessionId}`)} 
+              className="flex gap-2 w-full md:w-auto bg-gradient-to-r from-purple-600 to-indigo-600 hover:opacity-90 border-0"
             >
-              Jouer un autre quiz
+              <RefreshCw className="h-4 w-4" />
+              <span>Rejouer</span>
             </Button>
-            
-            <Button 
-              onClick={() => navigate("/")}
-              className="w-full sm:w-auto"
-            >
-              <Home className="h-4 w-4 mr-2" />
-              Accueil
-            </Button>
-          </CardFooter>
-        </Card>
+          )}
+        </motion.div>
       </div>
     </div>
   );
