@@ -11,6 +11,10 @@ import TakeQuiz from "@/pages/take-quiz";
 import QuizResults from "@/pages/quiz-results";
 import QRCode from "@/pages/qr-code";
 import Leaderboard from "@/pages/leaderboard";
+import Multiplayer from "@/pages/multiplayer";
+import MultiplayerLobby from "@/pages/multiplayer-lobby";
+import MultiplayerGame from "@/pages/multiplayer-game";
+import MultiplayerResults from "@/pages/multiplayer-results";
 import TabBar from "@/components/tab-bar";
 import { useLocation } from "wouter";
 
