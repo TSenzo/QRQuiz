@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Progress } from "@/components/ui/progress";
 import { MultiplayerService, wsConnection } from "@/lib/multiplayer-service";
 import { useToast } from "@/hooks/use-toast";
 import { GameSession, Quiz, Question } from "@shared/schema";
@@ -30,7 +31,6 @@ export default function MultiplayerGame() {
   const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const [remainingTime, setRemainingTime] = useState(0);
   const [showAnimation, setShowAnimation] = useState(false);
-  const [animationType, setAnimationType] = useState<"correct" | "incorrect" | null>(null);
   
   // Récupérer les informations de la session
   const { 
@@ -99,7 +99,6 @@ export default function MultiplayerGame() {
       setHasAnswered(false);
       setIsCorrect(null);
       setShowAnimation(false);
-      setAnimationType(null);
     } catch (error) {
       console.error("Failed to go to next question:", error);
       toast({
@@ -128,7 +127,7 @@ export default function MultiplayerGame() {
         setHasAnswered(false);
         setIsCorrect(null);
         setShowAnimation(false);
-        setAnimationType(null);
+
       }
     };
     
@@ -192,8 +191,8 @@ export default function MultiplayerGame() {
       );
       
       // Afficher l'animation
+      // Mise à jour des états pour l'affichage du feedback
       setIsCorrect(result.isCorrect);
-      setAnimationType(result.isCorrect ? "correct" : "incorrect");
       setShowAnimation(true);
       
       // Faire vibrer l'appareil si disponible
