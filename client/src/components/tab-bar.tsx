@@ -8,6 +8,7 @@ export default function TabBar() {
     { path: '/', icon: 'ri-home-5-line', label: 'Accueil' },
     { path: '/create-quiz', icon: 'ri-add-box-line', label: 'Créer' },
     { path: '/scan-qr', icon: 'ri-qr-scan-line', label: 'Scanner' },
+    { path: '/multiplayer', icon: 'ri-user-voice-line', label: 'Multijoueur' },
     { path: '/leaderboard', icon: 'ri-trophy-line', label: 'Classement' }
   ];
   

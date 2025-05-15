@@ -34,6 +34,10 @@ function Router() {
         <Route path="/quiz-results/:id/:score" component={QuizResults} />
         <Route path="/qr-code/:id" component={QRCode} />
         <Route path="/leaderboard" component={Leaderboard} />
+        <Route path="/multiplayer" component={Multiplayer} />
+        <Route path="/multiplayer-lobby/:id" component={MultiplayerLobby} />
+        <Route path="/multiplayer-game/:id" component={MultiplayerGame} />
+        <Route path="/multiplayer-results/:id" component={MultiplayerResults} />
         <Route component={NotFound} />
       </Switch>
       

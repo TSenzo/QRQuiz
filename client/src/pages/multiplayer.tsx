@@ -7,11 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Separator } from "@/components/ui/separator";
-import { QuizCard } from "@/components/quiz-card";
+import QuizCard from "@/components/quiz-card";
 import { MultiplayerService } from "@/lib/multiplayer-service";
 import { useToast } from "@/hooks/use-toast";
 import { Quiz } from "@shared/schema";
-import { QRScanner } from "@/components/ui/qr-scanner";
+import QRScanner from "@/components/ui/qr-scanner";
 
 export default function Multiplayer() {
   const [, navigate] = useLocation();

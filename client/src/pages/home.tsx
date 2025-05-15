@@ -71,6 +71,10 @@ export default function Home() {
     navigate('/create-quiz');
   };
   
+  const handleMultiplayer = () => {
+    navigate('/multiplayer');
+  };
+  
   // Get only the most recent 2 quizzes
   const recentQuizzes = quizzes.slice(0, 2);
   
@@ -82,20 +86,27 @@ export default function Home() {
       </div>
       
       {/* Quick Actions */}
-      <div className="flex gap-4 mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8 animate-slide-up" style={{ animationDelay: '0.1s' }}>
         <button 
           onClick={handleScanQR}
-          className="flex-1 bg-primary-500 text-white rounded-xl p-4 flex flex-col items-center justify-center shadow-md hover:bg-primary-600 transition-all"
+          className="bg-primary-500 text-white rounded-xl p-4 flex flex-col items-center justify-center shadow-md hover:bg-primary-600 transition-all"
         >
           <i className="ri-qr-scan-2-line text-3xl mb-2"></i>
           <span className="font-medium">Scanner</span>
         </button>
         <button 
           onClick={handleCreateQuiz}
-          className="flex-1 bg-secondary-500 text-white rounded-xl p-4 flex flex-col items-center justify-center shadow-md hover:bg-secondary-600 transition-all"
+          className="bg-secondary-500 text-white rounded-xl p-4 flex flex-col items-center justify-center shadow-md hover:bg-secondary-600 transition-all"
         >
           <i className="ri-add-line text-3xl mb-2"></i>
           <span className="font-medium">Créer</span>
+        </button>
+        <button 
+          onClick={handleMultiplayer}
+          className="col-span-2 md:col-span-1 bg-green-600 text-white rounded-xl p-4 flex flex-col items-center justify-center shadow-md hover:bg-green-700 transition-all"
+        >
+          <i className="ri-user-voice-line text-3xl mb-2"></i>
+          <span className="font-medium">Multijoueur</span>
         </button>
       </div>
 

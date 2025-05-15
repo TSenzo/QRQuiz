@@ -261,7 +261,7 @@ export default function MultiplayerLobby() {
                       )}
                     </div>
                     <Badge 
-                      variant={player.isReady ? "success" : "secondary"}
+                      variant={player.isReady ? "default" : "secondary"}
                       className={player.isReady ? "bg-green-500 hover:bg-green-600" : ""}
                     >
                       {player.isReady ? "Prêt" : "En attente"}
