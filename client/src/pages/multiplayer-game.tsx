@@ -271,7 +271,7 @@ export default function MultiplayerGame() {
   }
   
   // Si la session est terminée
-  if (session.status === "finished") {
+  if (session?.status === "finished") {
     return (
       <div className="container mx-auto p-4 flex flex-col items-center justify-center min-h-[60vh]">
         <h1 className="text-2xl font-bold mb-4">Quiz terminé !</h1>
@@ -284,7 +284,7 @@ export default function MultiplayerGame() {
   }
   
   // Si la session est en attente
-  if (session.status === "waiting") {
+  if (session?.status === "waiting") {
     return (
       <div className="container mx-auto p-4 flex flex-col items-center justify-center min-h-[60vh]">
         <h1 className="text-2xl font-bold mb-4">En attente de démarrage</h1>
@@ -297,15 +297,15 @@ export default function MultiplayerGame() {
   }
   
   // Calculer le temps restant pour la question
-  const timeProgress = session.questionStartTime
+  const timeProgress = session?.questionStartTime && session?.timePerQuestion
     ? Math.max(0, Math.min(100, (remainingTime / (session.timePerQuestion * 1000)) * 100))
     : 0;
   
   // Nombres de joueurs ayant répondu
-  const answeredPlayers = session.players.filter(p => {
+  const answeredPlayers = session?.players.filter(p => {
     const playerAnswers = p.answers || [];
     return playerAnswers.some(a => a.questionId === currentQuestion?.id);
-  }).length;
+  }).length || 0;
   
   return (
     <div className="container mx-auto p-4 relative">

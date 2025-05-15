@@ -138,28 +138,22 @@ export const wsConnection = new WebSocketConnection();
 export const MultiplayerService = {
   // Créer une nouvelle session
   async createSession(quizId: number, hostId: string, hostName: string, timePerQuestion?: number): Promise<GameSession> {
-    return apiRequest({
-      method: 'POST',
-      url: '/api/sessions',
-      body: { quizId, hostId, hostName, timePerQuestion }
+    const response = await apiRequest('POST', '/api/sessions', { 
+      quizId, hostId, hostName, timePerQuestion 
     });
+    return response as GameSession;
   },
   
   // Obtenir les informations d'une session
   async getSession(sessionId: string): Promise<GameSession> {
-    return apiRequest({
-      method: 'GET',
-      url: `/api/sessions/${sessionId}`
-    });
+    const response = await apiRequest('GET', `/api/sessions/${sessionId}`);
+    return response as GameSession;
   },
   
   // Rejoindre une session
   async joinSession(sessionId: string, player: Pick<Player, "id" | "name">): Promise<GameSession> {
-    const session = await apiRequest({
-      method: 'POST',
-      url: `/api/sessions/${sessionId}/join`,
-      body: player
-    });
+    const response = await apiRequest('POST', `/api/sessions/${sessionId}/join`, player);
+    const session = response as GameSession;
     
     // Se connecter au WebSocket
     wsConnection.joinSession(sessionId, player.id);
@@ -169,10 +163,7 @@ export const MultiplayerService = {
   
   // Quitter une session
   async leaveSession(sessionId: string, playerId: string): Promise<void> {
-    await apiRequest({
-      method: 'DELETE',
-      url: `/api/sessions/${sessionId}/players/${playerId}`
-    });
+    await apiRequest('DELETE', `/api/sessions/${sessionId}/players/${playerId}`);
     
     // Fermer la connexion WebSocket
     wsConnection.disconnect();
@@ -180,27 +171,20 @@ export const MultiplayerService = {
   
   // Marquer un joueur comme prêt
   async setPlayerReady(sessionId: string, playerId: string, isReady: boolean): Promise<GameSession> {
-    return apiRequest({
-      method: 'PATCH',
-      url: `/api/sessions/${sessionId}/players/${playerId}/ready`,
-      body: { isReady }
-    });
+    const response = await apiRequest('PATCH', `/api/sessions/${sessionId}/players/${playerId}/ready`, { isReady });
+    return response as GameSession;
   },
   
   // Démarrer une session
   async startSession(sessionId: string): Promise<GameSession> {
-    return apiRequest({
-      method: 'POST',
-      url: `/api/sessions/${sessionId}/start`
-    });
+    const response = await apiRequest('POST', `/api/sessions/${sessionId}/start`);
+    return response as GameSession;
   },
   
   // Passer à la question suivante
   async nextQuestion(sessionId: string): Promise<GameSession> {
-    return apiRequest({
-      method: 'POST',
-      url: `/api/sessions/${sessionId}/next-question`
-    });
+    const response = await apiRequest('POST', `/api/sessions/${sessionId}/next-question`);
+    return response as GameSession;
   },
   
   // Soumettre une réponse
@@ -211,16 +195,13 @@ export const MultiplayerService = {
     answerId: number, 
     responseTime: number
   ): Promise<{isCorrect: boolean, score: number, sessionStatus: string}> {
-    return apiRequest({
-      method: 'POST',
-      url: `/api/sessions/${sessionId}/answer`,
-      body: {
-        playerId,
-        questionId,
-        answerId,
-        responseTime
-      }
+    const response = await apiRequest('POST', `/api/sessions/${sessionId}/answer`, {
+      playerId,
+      questionId,
+      answerId,
+      responseTime
     });
+    return response as {isCorrect: boolean, score: number, sessionStatus: string};
   },
   
   // Générer un ID de joueur unique (basé sur un UUID)

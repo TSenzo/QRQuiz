@@ -194,9 +194,9 @@ export default function MultiplayerLobby() {
   }
   
   // Joueurs prêts / total
-  const readyPlayers = session.players.filter(p => p.isReady).length;
-  const totalPlayers = session.players.length;
-  const allReady = readyPlayers === totalPlayers;
+  const readyPlayers = session?.players.filter(p => p.isReady).length || 0;
+  const totalPlayers = session?.players.length || 0;
+  const allReady = readyPlayers === totalPlayers && totalPlayers > 0;
   
   return (
     <div className="container mx-auto p-4">
@@ -249,7 +249,7 @@ export default function MultiplayerLobby() {
             </CardHeader>
             <CardContent>
               <ul className="space-y-2">
-                {session.players.map(player => (
+                {session?.players.map(player => (
                   <li 
                     key={player.id} 
                     className="flex items-center justify-between p-3 border rounded-md"
