@@ -33,6 +33,7 @@ export default function TimerProgress({
   const getColor = () => {
     if (percentage > 60) return 'bg-green-500';
     if (percentage > 30) return 'bg-yellow-500';
+    if (percentage > 10) return 'bg-orange-500';
     return 'bg-red-500';
   };
   
@@ -79,7 +80,8 @@ export default function TimerProgress({
           animate={{ 
             width: `${percentage}%`,
             // Ajouter une animation de pulsation si le temps est bas et l'option activée
-            scale: (isLowTime && pulseWhenLow) ? [1, 1.03, 1] : 1
+            scale: (isLowTime && pulseWhenLow) ? [1, 1.03, 1] : 1,
+            opacity: isLowTime && pulseWhenLow ? [1, 0.9, 1] : 1
           }}
           transition={{ 
             duration: 0.3,

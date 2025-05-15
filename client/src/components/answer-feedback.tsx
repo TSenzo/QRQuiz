@@ -27,24 +27,33 @@ export default function AnswerFeedback({
   // Lancer des confettis pour les bonnes réponses
   useEffect(() => {
     if (isVisible && isCorrect === true) {
-      const end = Date.now() + 700;
+      const end = Date.now() + 1000;
       
-      // Créer une animation de confettis qui dure 700ms
+      // Créer une animation de confettis qui dure 1000ms
       const frame = () => {
         confetti({
-          particleCount: 2,
+          particleCount: 4,
           angle: 60,
           spread: 55,
           origin: { x: 0, y: 0.8 },
-          colors: ['#4CAF50', '#8BC34A', '#CDDC39']
+          colors: ['#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B']
         });
         
         confetti({
-          particleCount: 2,
+          particleCount: 4,
           angle: 120,
           spread: 55,
           origin: { x: 1, y: 0.8 },
-          colors: ['#4CAF50', '#8BC34A', '#CDDC39']
+          colors: ['#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B']
+        });
+        
+        // Ajout de confettis depuis le haut pour un effet plus festif
+        confetti({
+          particleCount: 3,
+          angle: 90,
+          spread: 45,
+          origin: { x: 0.5, y: 0.3 },
+          colors: ['#4CAF50', '#8BC34A', '#CDDC39', '#FFEB3B']
         });
         
         if (Date.now() < end) {

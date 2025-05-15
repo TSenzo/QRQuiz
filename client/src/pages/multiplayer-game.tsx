@@ -127,7 +127,6 @@ export default function MultiplayerGame() {
         setHasAnswered(false);
         setIsCorrect(null);
         setShowAnimation(false);
-
       }
     };
     
