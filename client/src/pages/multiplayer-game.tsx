@@ -5,12 +5,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { MultiplayerService, wsConnection } from "@/lib/multiplayer-service";
 import { useToast } from "@/hooks/use-toast";
 import { GameSession, Quiz, Question } from "@shared/schema";
-import { Loader2, CheckCircle, XCircle, Clock, UserCheck } from "lucide-react";
+import { Loader2, Clock, UserCheck } from "lucide-react";
+import TimerProgress from "@/components/timer-progress";
+import AnswerFeedback from "@/components/answer-feedback";
 
 export default function MultiplayerGame() {
   const { id: sessionId } = useParams<{ id: string }>();
@@ -309,37 +310,20 @@ export default function MultiplayerGame() {
   
   return (
     <div className="container mx-auto p-4 relative">
-      {/* Animation de réponse */}
-      <AnimatePresence>
-        {showAnimation && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
-          >
-            <motion.div
-              initial={{ scale: 0.5 }}
-              animate={{ scale: 1.5 }}
-              exit={{ scale: 0 }}
-              className={`rounded-full p-12 ${animationType === "correct" ? "bg-green-500" : "bg-red-500"}`}
-            >
-              {animationType === "correct" ? (
-                <CheckCircle className="h-20 w-20 text-white" />
-              ) : (
-                <XCircle className="h-20 w-20 text-white" />
-              )}
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Animation de réponse avec effets visuels */}
+      <AnswerFeedback 
+        isVisible={showAnimation}
+        isCorrect={isCorrect}
+        onAnimationComplete={() => setShowAnimation(false)}
+        duration={1500}
+      />
       
       <div className="max-w-4xl mx-auto">
         {/* En-tête avec informations de jeu */}
         <div className="flex flex-col md:flex-row justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold">
-              Question {(session.currentQuestionIndex + 1)}/{quiz?.questions.length}
+              Question {(session?.currentQuestionIndex || 0) + 1}/{quiz?.questions.length || 0}
             </h1>
             <p className="text-sm text-muted-foreground">
               {quiz?.title}
@@ -349,7 +333,7 @@ export default function MultiplayerGame() {
           <div className="flex items-center gap-4 mt-4 md:mt-0">
             <div className="flex items-center gap-2">
               <UserCheck className="h-5 w-5" />
-              <span>{answeredPlayers}/{session.players.length}</span>
+              <span>{answeredPlayers}/{session?.players.length || 0}</span>
             </div>
             
             <Badge>
@@ -358,18 +342,15 @@ export default function MultiplayerGame() {
           </div>
         </div>
         
-        {/* Barre de progression du temps */}
+        {/* Chronomètre interactif */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium">
-              <Clock className="h-4 w-4 inline mr-1" />
-              Temps restant
-            </span>
-            <span className="text-sm font-medium">
-              {Math.ceil(remainingTime / 1000)}s
-            </span>
-          </div>
-          <Progress value={timeProgress} className="h-3" />
+          <TimerProgress
+            duration={session?.timePerQuestion ? session.timePerQuestion * 1000 : 30000}
+            remainingTime={remainingTime}
+            size="lg"
+            pulseWhenLow={true}
+            lowTimeThreshold={5}
+          />
         </div>
         
         {/* Question et réponses */}
@@ -419,7 +400,7 @@ export default function MultiplayerGame() {
               onClick={goToNextQuestion}
               disabled={isSubmitting}
             >
-              {session.currentQuestionIndex >= (quiz?.questions.length || 0) - 1
+              {(session?.currentQuestionIndex || 0) >= (quiz?.questions.length || 0) - 1
                 ? "Terminer le quiz"
                 : "Question suivante"}
             </Button>
