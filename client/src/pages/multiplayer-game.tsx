@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { MultiplayerService, wsConnection } from "@/lib/multiplayer-service";
 import { useToast } from "@/hooks/use-toast";
 import { GameSession, Quiz, Question } from "@shared/schema";
-import { Loader2, Clock, UserCheck } from "lucide-react";
+import { Loader2, Clock, UserCheck, CheckCircle, XCircle, Timer, Users, Trophy, Award } from "lucide-react";
 import TimerProgress from "@/components/timer-progress";
 import AnswerFeedback from "@/components/answer-feedback";
 
@@ -153,7 +153,8 @@ export default function MultiplayerGame() {
       remainingTime === 0 && 
       session.questionStartTime && 
       isHost &&
-      !isSubmitting
+      !isSubmitting &&
+      !hasAnswered
     ) {
       const timeNow = Date.now();
       const timeElapsed = timeNow - session.questionStartTime;
@@ -161,10 +162,20 @@ export default function MultiplayerGame() {
       
       // Si le temps est bien écoulé (avec une marge de 1 seconde)
       if (timeElapsed > timePerQuestion + 1000) {
-        goToNextQuestion();
+        // Afficher un feedback visuel pour le temps écoulé avant de passer à la question suivante
+        toast({
+          title: "Temps écoulé !",
+          description: "Passage à la question suivante...",
+          variant: "default",
+        });
+        
+        // Petit délai pour permettre de voir le toast
+        setTimeout(() => {
+          goToNextQuestion();
+        }, 1500);
       }
     }
-  }, [remainingTime, session, isHost, goToNextQuestion, isSubmitting]);
+  }, [remainingTime, session, isHost, goToNextQuestion, isSubmitting, hasAnswered, toast]);
   
   // Soumettre une réponse
   const handleSubmitAnswer = async (answerId: number) => {
@@ -199,10 +210,20 @@ export default function MultiplayerGame() {
         navigator.vibrate(result.isCorrect ? [100] : [100, 50, 100]);
       }
       
-      // Masquer l'animation après un délai
+      // Masquer l'animation après un délai et passer à la question suivante si c'est l'hôte
       setTimeout(() => {
         setShowAnimation(false);
-      }, 1500);
+        
+        // Si c'est l'hôte et que tous les joueurs ont répondu, passer à la question suivante automatiquement
+        const allPlayersAnswered = session?.players.every(p => {
+          const playerAnswers = p.answers || [];
+          return playerAnswers.some(a => a.questionId === currentQuestion?.id);
+        });
+        
+        if (isHost && allPlayersAnswered) {
+          goToNextQuestion();
+        }
+      }, 2000);
       
     } catch (error) {
       console.error("Failed to submit answer:", error);
@@ -330,12 +351,13 @@ export default function MultiplayerGame() {
           
           <div className="flex items-center gap-4 mt-4 md:mt-0">
             <div className="flex items-center gap-2">
-              <UserCheck className="h-5 w-5" />
-              <span>{answeredPlayers}/{session?.players.length || 0}</span>
+              <Users className="h-5 w-5 text-blue-500" />
+              <span>{answeredPlayers}/{session?.players.length || 0} joueurs ont répondu</span>
             </div>
             
-            <Badge>
-              Score: {currentPlayer.currentScore}
+            <Badge className="gap-1 px-3 py-1 text-sm font-semibold bg-amber-500 hover:bg-amber-600">
+              <Trophy className="h-4 w-4" />
+              <span>Score: {currentPlayer.currentScore}</span>
             </Badge>
           </div>
         </div>
@@ -369,17 +391,30 @@ export default function MultiplayerGame() {
                 >
                   <Button
                     variant={selectedAnswerId === answer.id ? "default" : "outline"}
-                    className={`w-full h-auto p-4 text-left justify-start items-start text-base font-normal ${
+                    className={`w-full h-auto p-4 text-left justify-start items-start text-base font-normal relative ${
                       hasAnswered && selectedAnswerId === answer.id
                         ? isCorrect
-                          ? "bg-green-500 hover:bg-green-500 border-green-500"
-                          : "bg-red-500 hover:bg-red-500 border-red-500"
-                        : ""
+                          ? "bg-green-500 hover:bg-green-500 border-green-500 text-white"
+                          : "bg-red-500 hover:bg-red-500 border-red-500 text-white"
+                        : hasAnswered
+                          ? "opacity-70" // Diminuer l'opacité des autres réponses quand le joueur a répondu
+                          : "hover:shadow-md hover:translate-y-[-2px] transition-all"
                     }`}
                     disabled={hasAnswered || isSubmitting}
                     onClick={() => handleSubmitAnswer(answer.id)}
                   >
-                    <span>{answer.text}</span>
+                    <div className="flex items-start gap-2">
+                      {hasAnswered && selectedAnswerId === answer.id && (
+                        <span className="shrink-0 mt-0.5">
+                          {isCorrect ? (
+                            <CheckCircle className="h-5 w-5 text-white" />
+                          ) : (
+                            <XCircle className="h-5 w-5 text-white" />
+                          )}
+                        </span>
+                      )}
+                      <span>{answer.text}</span>
+                    </div>
                   </Button>
                 </motion.div>
               ))}
@@ -397,16 +432,26 @@ export default function MultiplayerGame() {
             <Button 
               onClick={goToNextQuestion}
               disabled={isSubmitting}
+              size="lg"
+              className="px-6 py-6 text-base font-medium gap-2 transition-all hover:scale-105"
             >
-              {(session?.currentQuestionIndex || 0) >= (quiz?.questions.length || 0) - 1
-                ? "Terminer le quiz"
-                : "Question suivante"}
+              {(session?.currentQuestionIndex || 0) >= (quiz?.questions.length || 0) - 1 ? (
+                <>
+                  <Award className="h-5 w-5" />
+                  Terminer le quiz et voir les résultats
+                </>
+              ) : (
+                <>
+                  <Timer className="h-5 w-5" />
+                  Passer à la question suivante
+                </>
+              )}
             </Button>
             
-            <p className="text-sm text-muted-foreground mt-2">
-              En tant qu'hôte, vous pouvez passer à la question suivante à tout moment.
+            <p className="text-sm text-muted-foreground mt-3">
+              En tant qu'hôte, vous pouvez contrôler le rythme du jeu.
               <br />
-              La question passera automatiquement quand le temps sera écoulé.
+              La question passera automatiquement lorsque tous les joueurs auront répondu ou quand le temps sera écoulé.
             </p>
           </div>
         )}
