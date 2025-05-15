@@ -61,10 +61,44 @@ export type Score = typeof scores.$inferSelect;
 export const answerResponseSchema = z.object({
   questionId: z.number(),
   answerId: z.number(),
-  isCorrect: z.boolean()
+  isCorrect: z.boolean(),
+  responseTime: z.number().optional() // Temps de réponse en millisecondes
 });
 
 export type AnswerResponse = z.infer<typeof answerResponseSchema>;
+
+// Session multijoueur
+export const gameSessionSchema = z.object({
+  id: z.string(),
+  hostId: z.string(),
+  quizId: z.number(),
+  status: z.enum(["waiting", "playing", "finished"]),
+  players: z.array(z.object({
+    id: z.string(),
+    name: z.string(),
+    isHost: z.boolean(),
+    isReady: z.boolean(),
+    currentScore: z.number(),
+    answers: z.array(answerResponseSchema).optional()
+  })),
+  currentQuestionIndex: z.number(),
+  questionStartTime: z.number().optional(), // Timestamp de début de la question actuelle
+  timePerQuestion: z.number(), // Temps par question en secondes
+  createdAt: z.date()
+});
+
+export type GameSession = z.infer<typeof gameSessionSchema>;
+
+export const playerSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  isHost: z.boolean(),
+  isReady: z.boolean(),
+  currentScore: z.number(),
+  answers: z.array(answerResponseSchema).optional()
+});
+
+export type Player = z.infer<typeof playerSchema>;
 
 // Mock quiz for type references
 export const mockQuizType = {

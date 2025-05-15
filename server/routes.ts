@@ -1,7 +1,8 @@
-import express, { type Express } from "express";
+import express, { type Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer } from "ws";
 import { storage } from "./storage";
-import { insertQuizSchema, insertScoreSchema } from "@shared/schema";
+import { insertQuizSchema, insertScoreSchema, playerSchema, gameSessionSchema } from "@shared/schema";
 import { ZodError } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
