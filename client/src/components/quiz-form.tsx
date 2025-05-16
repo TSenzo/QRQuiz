@@ -2,13 +2,13 @@ import { useState } from "react";
 import { useForm, useFieldArray, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { 
-  Form, 
-  FormControl, 
-  FormField, 
-  FormItem, 
-  FormLabel, 
-  FormMessage 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -60,7 +60,7 @@ export default function QuizForm({ onSubmit }: QuizFormProps) {
     },
   });
 
-  const { fields: questionFields, append: appendQuestion, remove: removeQuestion } = 
+  const { fields: questionFields, append: appendQuestion, remove: removeQuestion } =
     useFieldArray({ control: form.control, name: "questions" });
 
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
@@ -104,10 +104,14 @@ export default function QuizForm({ onSubmit }: QuizFormProps) {
             <FormItem>
               <FormLabel>Description (optionnel)</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Décrivez le contenu de votre quiz..." 
-                  rows={3} 
-                  {...field} 
+                <Textarea
+                  placeholder="Décrivez le contenu de votre quiz..."
+                  rows={3}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  name={field.name}
+                  ref={field.ref}
                 />
               </FormControl>
               <FormMessage />
@@ -118,10 +122,10 @@ export default function QuizForm({ onSubmit }: QuizFormProps) {
         <div>
           <div className="flex justify-between items-center mb-1">
             <FormLabel>Questions</FormLabel>
-            <Button 
-              type="button" 
-              variant="ghost" 
-              size="sm" 
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
               className="text-primary font-medium"
               onClick={addQuestion}
             >
@@ -139,10 +143,10 @@ export default function QuizForm({ onSubmit }: QuizFormProps) {
                   <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                     <GripVertical className="h-4 w-4 text-neutral-400" />
                   </Button>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="sm"
-                    className="h-8 w-8 p-0 text-neutral-400 hover:text-red-500" 
+                    className="h-8 w-8 p-0 text-neutral-400 hover:text-red-500"
                     onClick={() => removeQuestion(questionIndex)}
                     disabled={questionFields.length === 1}
                   >
@@ -164,9 +168,9 @@ export default function QuizForm({ onSubmit }: QuizFormProps) {
                 )}
               />
 
-              <AnswersFieldArray 
-                nestIndex={questionIndex} 
-                control={form.control} 
+              <AnswersFieldArray
+                nestIndex={questionIndex}
+                control={form.control}
                 nextAnswerId={nextAnswerId}
                 setNextAnswerId={setNextAnswerId}
               />
@@ -174,9 +178,9 @@ export default function QuizForm({ onSubmit }: QuizFormProps) {
           ))}
 
           {/* Add another question placeholder */}
-          <Button 
-            type="button" 
-            variant="outline" 
+          <Button
+            type="button"
+            variant="outline"
             className="w-full flex items-center justify-center px-4 py-4 border border-dashed border-neutral-300 rounded-xl text-neutral-500 hover:text-primary-500 hover:border-primary-300"
             onClick={addQuestion}
           >
@@ -185,8 +189,8 @@ export default function QuizForm({ onSubmit }: QuizFormProps) {
         </div>
 
         <div className="pt-4">
-          <Button 
-            type="submit" 
+          <Button
+            type="submit"
             className="w-full bg-primary-500 hover:bg-primary-600 text-white py-3 px-4 rounded-lg font-medium shadow-sm flex items-center justify-center"
           >
             <i className="ri-qr-code-line mr-2"></i> Générer le QR code du quiz
@@ -211,10 +215,10 @@ function AnswersFieldArray({ nestIndex, control, nextAnswerId, setNextAnswerId }
   });
 
   const addAnswer = () => {
-    append({ 
-      id: nextAnswerId, 
-      text: "", 
-      isCorrect: false 
+    append({
+      id: nextAnswerId,
+      text: "",
+      isCorrect: false
     });
     setNextAnswerId(prev => prev + 1);
   };
@@ -225,8 +229,8 @@ function AnswersFieldArray({ nestIndex, control, nextAnswerId, setNextAnswerId }
         control={control}
         name={`questions.${nestIndex}.answers`}
         render={({ field }) => (
-          <RadioGroup 
-            defaultValue={field.value.findIndex(a => a.isCorrect).toString()} 
+          <RadioGroup
+            defaultValue={field.value.findIndex((a: { isCorrect: boolean }) => a.isCorrect).toString()}
             onValueChange={(value) => {
               const updatedAnswers = [...field.value];
               updatedAnswers.forEach((answer, idx) => {
@@ -238,9 +242,9 @@ function AnswersFieldArray({ nestIndex, control, nextAnswerId, setNextAnswerId }
           >
             {fields.map((answerField, answerIndex) => (
               <div key={answerField.id} className="flex items-center">
-                <RadioGroupItem 
-                  id={`answer_${nestIndex}_${answerIndex}`} 
-                  value={answerIndex.toString()} 
+                <RadioGroupItem
+                  id={`answer_${nestIndex}_${answerIndex}`}
+                  value={answerIndex.toString()}
                   className="mr-3 h-4 w-4 text-primary-500"
                 />
                 <FormField
@@ -250,17 +254,17 @@ function AnswersFieldArray({ nestIndex, control, nextAnswerId, setNextAnswerId }
                     <FormItem className="flex-1">
                       <FormControl>
                         <div className="flex">
-                          <Input 
-                            placeholder={`Réponse ${answerIndex + 1}`} 
-                            {...field} 
+                          <Input
+                            placeholder={`Réponse ${answerIndex + 1}`}
+                            {...field}
                             className="flex-1"
                           />
                           {fields.length > 2 && (
-                            <Button 
-                              type="button" 
-                              variant="ghost" 
+                            <Button
+                              type="button"
+                              variant="ghost"
                               size="icon"
-                              className="ml-2 text-neutral-400 hover:text-red-500" 
+                              className="ml-2 text-neutral-400 hover:text-red-500"
                               onClick={() => remove(answerIndex)}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -279,8 +283,8 @@ function AnswersFieldArray({ nestIndex, control, nextAnswerId, setNextAnswerId }
       />
 
       {fields.length < 6 && (
-        <Button 
-          type="button" 
+        <Button
+          type="button"
           variant="outline"
           className="w-full flex items-center justify-center px-4 py-2 bg-neutral-100 text-neutral-600 rounded-lg hover:bg-neutral-200 transition text-sm font-medium"
           onClick={addAnswer}
